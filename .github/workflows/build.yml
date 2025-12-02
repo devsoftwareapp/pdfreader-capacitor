@@ -15,20 +15,21 @@ jobs:
       with:
         node-version: '20'
 
-    - run: npm install -g cordova
+    - name: Install Cordova
+      run: npm install -g cordova
 
     - name: Install project dependencies
       run: npm install
 
-    - name: Add Android platform
-      run: cordova platform add android
+    - name: Add Android platform (API 36)
+      run: cordova platform add android@latest
 
-    - name: Install plugins via plugin-auto.sh
+    - name: Run plugin-auto.sh (plugins from config.xml)
       run: |
         chmod +x ./plugin-auto.sh
         ./plugin-auto.sh
 
-    - name: Build APK
+    - name: Build APK (debug)
       run: cordova build android --debug
 
     - uses: actions/upload-artifact@v4
