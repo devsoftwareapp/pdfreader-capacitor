@@ -40,6 +40,6 @@
     <plugin name="cordova-plugin-file-opener2" />
     <plugin name="cordova-plugin-dialogs" />
     <plugin name="cordova-plugin-splashscreen" />
-    <plugin name="cordova-plugin-statusbar" />
+    
 
 </widget>
