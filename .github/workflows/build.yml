@@ -7,20 +7,30 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - uses: actions/setup-node@v4
       with:
         node-version: '18'
-    
-    - run: npm install && npm install -g cordova
-    
-    - run: cordova platform add android
-    
-    - run: cordova build android --debug
-    
+
+    - run: npm install -g cordova
+
+    - name: Install project dependencies
+      run: npm install
+
+    - name: Add Android platform
+      run: cordova platform add android
+
+    - name: Install plugins via plugin.sh
+      run: |
+        chmod +x ./plugin.sh
+        ./plugin.sh
+
+    - name: Build APK
+      run: cordova build android --debug
+
     - uses: actions/upload-artifact@v4
       with:
         name: android-debug-apk
