@@ -23,10 +23,10 @@ jobs:
     - name: Add Android platform
       run: cordova platform add android
 
-    - name: Install plugins via plugin.sh
+    - name: Install plugins via plugin-auto.sh
       run: |
-        chmod +x ./plugin.sh
-        ./plugin.sh
+        chmod +x ./plugin-auto.sh
+        ./plugin-auto.sh
 
     - name: Build APK
       run: cordova build android --debug
