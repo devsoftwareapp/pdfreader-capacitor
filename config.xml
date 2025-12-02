@@ -9,51 +9,39 @@
         Apache Cordova Team
     </author>
 
-    <!-- Uygulama başlangıç dosyası -->
     <content src="web/index.html" />
 
-    <!-- ANDROID PLATFORM AYARLARI -->
     <platform name="android">
 
-        <!-- SDK sürümleri -->
+        <!-- SDK Version -->
         <preference name="android-minSdkVersion" value="24" />
         <preference name="android-targetSdkVersion" value="36" />
         <preference name="android-compileSdkVersion" value="36" />
 
-        <!-- Android izinleri -->
-        <config-file target="AndroidManifest.xml" parent="/*">
-
-            <!-- Android 28 ve öncesi için klasik storage izinleri -->
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-                             android:maxSdkVersion="28" />
-            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-                             android:maxSdkVersion="32" />
-
-            <!-- Android 33+ için yeni storage izinleri -->
+        <!-- Android Permissions (DOĞRU YÖNTEM = edit-config) -->
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest">
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+            <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
             <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
             <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
             <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+        </edit-config>
 
-            <!-- İsteğe bağlı: All Files Access (Android 11+) -->
-            <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-
-        </config-file>
-
-        <!-- Cordova File System ayarı -->
         <preference name="AndroidPersistentFileLocation" value="Compatibility" />
 
     </platform>
 
-    <!-- İzin verilen URL şemaları -->
+    <!-- Intent izinleri -->
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
 
-    <!-- Plugin bildirimi (otomatik yükleme için) -->
+    <!-- Plugin bildirimi -->
     <plugin name="cordova-plugin-file" />
     <plugin name="cordova-plugin-file-transfer" />
     <plugin name="cordova-plugin-android-permissions" />
     <plugin name="cordova-plugin-file-opener2" />
     <plugin name="cordova-plugin-dialogs" />
-    
+    <plugin name="cordova-plugin-splashscreen" />
 
 </widget>
