@@ -5,27 +5,27 @@
 
     <name>PDFReader</name>
     <description>PDF Reader Application</description>
-    <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
-        Apache Cordova Team
-    </author>
 
     <content src="web/index.html" />
 
+    <!-- ANDROID AYARLARI -->
     <platform name="android">
 
-        <!-- SDK Version -->
         <preference name="android-minSdkVersion" value="24" />
         <preference name="android-targetSdkVersion" value="36" />
         <preference name="android-compileSdkVersion" value="36" />
 
-        <!-- Android Permissions (DOĞRU YÖNTEM = edit-config) -->
-        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest">
+        <!-- İzinleri doğru şekilde ekle -->
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/uses-permission">
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+        </edit-config>
+
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/uses-permission">
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
-            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+        </edit-config>
+
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/uses-permission">
             <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-            <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-            <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-            <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
         </edit-config>
 
         <preference name="AndroidPersistentFileLocation" value="Compatibility" />
@@ -36,7 +36,7 @@
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
 
-    <!-- Plugin bildirimi -->
+    <!-- Pluginler -->
     <plugin name="cordova-plugin-file" />
     <plugin name="cordova-plugin-file-transfer" />
     <plugin name="cordova-plugin-android-permissions" />
