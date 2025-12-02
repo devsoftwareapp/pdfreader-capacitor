@@ -6,13 +6,24 @@
 
     <name>PDFReader</name>
     <description>PDF Reader Application</description>
-    <author email="dev@cordova.apache.org" href="https://cordova.apache.org">Apache Cordova Team</author>
+    <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
+        Apache Cordova Team
+    </author>
 
     <content src="web/index.html" />
 
+    <!-- ANDROID AYARLARI -->
     <platform name="android">
+
+        <!-- SDK Sürüm Ayarları -->
+        <preference name="android-minSdkVersion" value="24" />
+        <preference name="android-targetSdkVersion" value="36" />
+        <preference name="android-compileSdkVersion" value="36" />
+
+        <!-- Android izinleri -->
         <config-file target="AndroidManifest.xml" parent="/*">
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                             android:maxSdkVersion="28"/>
             <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
             <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
         </config-file>
@@ -20,6 +31,8 @@
         <preference name="AndroidPersistentFileLocation" value="Compatibility" />
     </platform>
 
+    <!-- İzin verilen intentler -->
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
+
 </widget>
