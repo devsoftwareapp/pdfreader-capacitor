@@ -1175,53 +1175,42 @@ document.addEventListener("webviewerloaded", () => {
 <!-- FOR SAVED FUNCTION -->
 
 
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const saveBtn = document.getElementById("secondaryDownload");
-  if (!saveBtn) {
-    console.warn("Kaydet butonu bulunamadı!");
-    return;
-  }
-
-  saveBtn.addEventListener("click", async function () {
-    const url = window.PDFViewerApplication?.url;
-
-    if (!url) {
-      alert("PDF dosyasının yolu alınamadı!");
-      return;
-    }
+  document.getElementById("secondaryDownload").addEventListener("click", async function () {
 
     try {
-      const response = await fetch(url);
+      console.log("Kaydet butonu tıklandı.");
+
+      // PDF URL’ini PDFJS içinde al
+      const pdfUrl = PDFViewerApplication.url;
+
+      // Dosyayı çek
+      const response = await fetch(pdfUrl);
       const blob = await response.blob();
-      const reader = new FileReader();
 
-      reader.onloadend = function () {
-        const base64Data = reader.result.split(",")[1];
+      // Cordova filesystem kullan
+      window.resolveLocalFileSystemURL(
+        cordova.file.externalDataDirectory,
+        function (dir) {
+          dir.getFile("dosya.pdf", { create: true }, function (file) {
 
-        window.resolveLocalFileSystemURL(url, function (fileEntry) {
-          fileEntry.createWriter(function (fileWriter) {
-            const newBlob = new Blob([blob], { type: "application/pdf" });
-            fileWriter.write(newBlob);
+            file.createWriter(function (fileWriter) {
+              fileWriter.write(blob);
+              alert("PDF Telefona Kaydedildi:\n" + file.nativeURL);
+            });
 
-            alert("Dosya kaydedildi:\n" + fileEntry.toURL());
-          }, function (err) {
-            alert("Kaydedilirken hata oluştu: " + err);
           });
-        }, function (err) {
-          alert("Dosya bulunamadı: " + err);
-        });
-      };
-
-      reader.readAsDataURL(blob);
-    } catch (e) {
-      alert("PDF indirilemedi: " + e);
+        }
+      );
+    } catch (err) {
+      console.error("Kaydetme hatası:", err);
+      alert("Kaydetme başarısız: " + err);
     }
+
   });
 });
 </script>
-
 
     
 
