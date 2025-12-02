@@ -20,26 +20,29 @@ jobs:
         node-version: '18'
         cache: 'npm'
 
-    - name: Install dependencies
+    - name: Clean install
       run: |
         npm ci
         npm install -g cordova
+        
+        # Temiz başlangıç
+        rm -rf platforms plugins
 
-    - name: Add Android platform
+    - name: Setup Android platform
       run: |
-        cordova platform add android
+        cordova platform add android || true
+        # Platform zaten ekliyse devam et
 
-    - name: Build Android APK
-      run: cordova build android --debug
-
-    - name: List APK files for debugging
-      run: find . -name "*.apk" -type f 2>/dev/null || true
-
+    - name: Build with Gradle directly
+      run: |
+        # Direkt Gradle ile build
+        cd platforms/android
+        chmod +x gradlew
+        ./gradlew assembleDebug
+        
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: android-debug-apk
-        path: |
-          platforms/android/app/build/outputs/apk/debug/*.apk
-          platforms/android/build/outputs/apk/debug/*.apk
+        path: platforms/android/app/build/outputs/apk/debug/*.apk
         retention-days: 7
