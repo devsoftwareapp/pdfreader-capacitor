@@ -30,8 +30,11 @@
       cursor: pointer;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-
   </style>
+
+  <!-- Cordova mutlaka en üstte yüklensin -->
+  <script src="cordova.js"></script>
+
 </head>
 <body>
 
@@ -42,6 +45,10 @@
   <div id="list"></div>
 
   <script>
+    document.addEventListener("deviceready", () => {
+      console.log("Cordova hazır (index.html)");
+    });
+
     let pdfList = [];
 
     function selectPdf() {
@@ -85,6 +92,7 @@
             "&name=" +
             encodeURIComponent(pdf.name);
 
+          // 🔥 Mutlaka bu şekilde yönlendirme
           window.location.href = url;
         };
 
