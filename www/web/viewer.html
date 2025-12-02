@@ -1171,5 +1171,60 @@ document.addEventListener("webviewerloaded", () => {
     </div>
     <!-- outerContainer -->
     <div id="printContainer"></div>
+
+<!-- FOR SAVED FUNCTION -->
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const saveBtn = document.getElementById("secondaryDownload");
+  if (!saveBtn) {
+    console.warn("Kaydet butonu bulunamadı!");
+    return;
+  }
+
+  saveBtn.addEventListener("click", async function () {
+    const url = window.PDFViewerApplication?.url;
+
+    if (!url) {
+      alert("PDF dosyasının yolu alınamadı!");
+      return;
+    }
+
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const reader = new FileReader();
+
+      reader.onloadend = function () {
+        const base64Data = reader.result.split(",")[1];
+
+        window.resolveLocalFileSystemURL(url, function (fileEntry) {
+          fileEntry.createWriter(function (fileWriter) {
+            const newBlob = new Blob([blob], { type: "application/pdf" });
+            fileWriter.write(newBlob);
+
+            alert("Dosya kaydedildi:\n" + fileEntry.toURL());
+          }, function (err) {
+            alert("Kaydedilirken hata oluştu: " + err);
+          });
+        }, function (err) {
+          alert("Dosya bulunamadı: " + err);
+        });
+      };
+
+      reader.readAsDataURL(blob);
+    } catch (e) {
+      alert("PDF indirilemedi: " + e);
+    }
+  });
+});
+</script>
+
+
+    
+
+    
   </body>
 </html>
