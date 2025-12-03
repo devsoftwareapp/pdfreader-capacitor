@@ -1126,335 +1126,157 @@
 
 <!-- pdf acma- kaydetme vs -->
 
+<!-- pdf acma- kaydetme vs -->
+
+
 
 
 
 
 <script>
-
 /* -----------------------------------------------------
-   1) Base64 ile PDF açma
+   1) Base64 PDF’i yükle
 ----------------------------------------------------- */
 document.addEventListener("webviewerloaded", function() {
-  console.log("📄 PDF.js yüklendi!");
-  
   const params = new URLSearchParams(window.location.search);
   const base64 = params.get("base64");
   if (!base64) return;
 
   try {
-    const b64 = base64.includes(',') ? base64.split(',')[1] : base64;
-    const raw = atob(b64);
-    const bytes = new Uint8Array(raw.length);
-    for (let i = 0; i < raw.length; i++) {
-      bytes[i] = raw.charCodeAt(i);
-    }
-    const blob = new Blob([bytes], { type: "application/pdf" });
-    const blobUrl = URL.createObjectURL(blob);
+    const clean = base64.includes(",") ? base64.split(",")[1] : base64;
+    const raw = atob(clean);
+    const arr = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
 
-    const waiter = setInterval(() => {
-      if (window.PDFViewerApplication && PDFViewerApplication.initialized) {
-        clearInterval(waiter);
+    const blobUrl = URL.createObjectURL(new Blob([arr], { type: "application/pdf" }));
+
+    const wait = setInterval(() => {
+      if (window.PDFViewerApplication?.initialized) {
+        clearInterval(wait);
         PDFViewerApplication.open({ url: blobUrl });
-        console.log("✅ PDF açıldı!");
       }
-    }, 100);
-  } catch (e) {
-    console.error("PDF açma hatası:", e);
+    }, 50);
+  } catch (err) {
+    console.error("PDF yükleme hatası:", err);
   }
 });
 
 /* -----------------------------------------------------
-   2) Android için ÖZEL Kaydetme Sistemi
+   2) CORDOVA READY
 ----------------------------------------------------- */
-
-// CORDOVA HAZIR MI BEKLE
-document.addEventListener("deviceready", function() {
-  console.log("📱 Cordova READY!");
-  console.log("Platform:", cordova.platformId);
-  console.log("File plugin:", !!cordova.file);
-  console.log("File externalStorageDirectory:", cordova.file.externalStorageDirectory);
-  
+document.addEventListener("deviceready", function () {
+  console.log("Cordova ready");
   initDownloadButton();
 });
 
-// TARAYICI MODU (debug için)
 if (!window.cordova) {
-  console.log("🌐 Tarayıcı modu - test için");
-  setTimeout(initDownloadButton, 2000);
+  console.log("Tarayıcı modu");
+  setTimeout(initDownloadButton, 1500);
 }
 
-// BUTONU KUR
+/* -----------------------------------------------------
+   3) Kaydet Butonunu Bul
+----------------------------------------------------- */
 function initDownloadButton() {
-  console.log("🔍 Download butonu aranıyor...");
-  
-  let attempts = 0;
-  const findBtnInterval = setInterval(function() {
-    attempts++;
+  let attempt = 0;
+  const interval = setInterval(() => {
+    attempt++;
     const btn = document.getElementById("secondaryDownload");
-    
     if (btn) {
-      clearInterval(findBtnInterval);
-      console.log("✅ secondaryDownload butonu BULUNDU!");
+      clearInterval(interval);
       setupButton(btn);
-    } else if (attempts > 10) {
-      clearInterval(findBtnInterval);
-      console.error("❌ secondaryDownload butonu bulunamadı!");
-      createEmergencyButton();
     }
-  }, 500);
+    if (attempt > 10) clearInterval(interval);
+  }, 300);
 }
 
-// BUTONU KURULUMU
 function setupButton(btn) {
-  // ESKİ EVENT'LERİ TEMİZLE
-  const newBtn = btn.cloneNode(true);
-  btn.parentNode.replaceChild(newBtn, btn);
-  
-  // YENİ EVENT EKLE
-  newBtn.addEventListener("click", function(e) {
-    console.log("🖱️ secondaryDownload tıklandı!");
+  const clone = btn.cloneNode(true);
+  btn.parentNode.replaceChild(clone, btn);
+
+  clone.addEventListener("click", function (e) {
     e.preventDefault();
     e.stopPropagation();
-    e.stopImmediatePropagation();
-    
-    // ANDROID İÇİN KAYDET
-    savePDFForAndroid();
-    
-    return false;
+    saveEditedPdf();
   }, true);
-  
-  console.log("🎯 Buton event'i eklendi!");
+
+  console.log("Download butonu aktif");
 }
 
-// ACİL BUTON (eğer orijinal buton çalışmazsa)
-function createEmergencyButton() {
-  console.log("🚨 Acil durum butonu oluşturuluyor...");
-  
-  const manualBtn = document.createElement("button");
-  manualBtn.textContent = "💾 PDF'i Kaydet (Manual)";
-  manualBtn.style.cssText = `
-    position: fixed; bottom: 20px; right: 20px; z-index: 9999;
-    padding: 15px 20px; background: #2196F3; color: white;
-    border: none; border-radius: 8px; font-size: 14px;
-    font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  `;
-  
-  manualBtn.onclick = function() {
-    savePDFForAndroid();
-  };
-  
-  document.body.appendChild(manualBtn);
-}
+/* -----------------------------------------------------
+   4) PDF’i al ve kaydet
+----------------------------------------------------- */
+function saveEditedPdf() {
 
-// ANDROID İÇİN ANA KAYDETME FONKSİYONU
-function savePDFForAndroid() {
-  console.log("💾 savePDFForAndroid çağrıldı");
-  
-  // 1. ANDROID KONTROLLERİ
-  if (typeof cordova === 'undefined') {
-    showAlert("❌ Cordova ortamı değil!", "Hata");
+  if (!window.cordova) {
+    alert("Cordova yok - Android cihazda deneyin");
     return;
   }
-  
-  if (!cordova.file) {
-    showAlert("❌ File plugin yüklü değil!", "Hata");
+
+  if (!PDFViewerApplication?.pdfDocument) {
+    alert("PDF yüklenmedi");
     return;
   }
-  
-  if (!window.PDFViewerApplication || !PDFViewerApplication.pdfDocument) {
-    showAlert("❌ PDF henüz yüklenmedi!", "Hata");
-    return;
-  }
-  
-  // 2. LOADING GÖSTER
-  if (navigator.notification && navigator.notification.activityStart) {
-    navigator.notification.activityStart("Lütfen bekleyin", "PDF kaydediliyor...");
-  }
-  
-  // 3. PDF'I AL
-  console.log("📄 PDF data alınıyor...");
+
   PDFViewerApplication.pdfDocument.getData()
-    .then(function(pdfData) {
-      console.log("✅ PDF data alındı, boyut:", pdfData.byteLength, "bytes");
-      processAndSavePDF(pdfData);
+    .then((pdfData) => {
+      saveToAndroid(pdfData);
     })
-    .catch(function(error) {
-      console.error("❌ PDF data alma hatası:", error);
-      showAlert("PDF alınamadı: " + error, "Hata");
-      stopLoading();
-    });
+    .catch(err => alert("Hata: " + err));
 }
 
-// PDF'I İŞLE VE KAYDET
-function processAndSavePDF(pdfData) {
-  try {
-    // ArrayBuffer → Uint8Array → Base64
-    const bytes = new Uint8Array(pdfData);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    const base64 = btoa(binary);
-    
-    console.log("🔢 Base64 hazır, uzunluk:", base64.length);
-    
-    // ANDROID'DE KAYDET
-    saveBase64ToAndroid(base64);
-    
-  } catch (error) {
-    console.error("❌ PDF işleme hatası:", error);
-    showAlert("PDF işleme hatası: " + error, "Hata");
-    stopLoading();
-  }
-}
-
-// ANDROID FİLE SYSTEM'E KAYDET
-function saveBase64ToAndroid(base64Data) {
-  console.log("📱 Android'e kaydediliyor...");
-  console.log("Storage dizini:", cordova.file.externalStorageDirectory);
-  
-  // Android Download klasörü yolunu al
-  const downloadsPath = cordova.file.externalStorageDirectory + "Download/";
-  const finalPath = downloadsPath + "PDF_Reader/";
+/* -----------------------------------------------------
+   5) Android Dosya Sistemi
+----------------------------------------------------- */
+function saveToAndroid(arrayBuffer) {
   const fileName = "edited_" + Date.now() + ".pdf";
-  const fullPath = finalPath + fileName;
-  
-  console.log("📁 Tam yol:", fullPath);
-  
-  // 1. Önce dizini oluştur
-  window.resolveLocalFileSystemURL(cordova.file.externalStorageDirectory, 
-    function(rootEntry) {
-      console.log("✅ Root erişildi");
-      
-      // 2. Download klasörü
-      rootEntry.getDirectory("Download", { create: true, exclusive: false },
-        function(downloadDir) {
-          console.log("✅ Download klasörü hazır");
-          
-          // 3. PDF_Reader alt klasörü
-          downloadDir.getDirectory("PDF_Reader", { create: true, exclusive: false },
-            function(pdfReaderDir) {
-              console.log("✅ PDF_Reader klasörü hazır");
-              
-              // 4. Dosyayı oluştur
-              pdfReaderDir.getFile(fileName, { create: true, exclusive: false },
-                function(fileEntry) {
-                  console.log("✅ Dosya oluşturuldu:", fileEntry.name);
-                  
-                  // 5. Yazma işlemi
-                  fileEntry.createWriter(
-                    function(fileWriter) {
-                      
-                      fileWriter.onwriteend = function() {
-                        console.log("✅ Yazma tamamlandı!");
-                        stopLoading();
-                        
-                        // BAŞARI MESAJI
-                        showAlert(
-                          "✅ PDF başarıyla kaydedildi!\n\n" +
-                          "Dosya: " + fileName + "\n" +
-                          "Konum: Download/PDF_Reader klasörü\n\n" +
-                          "Not: Annotation'lar PDF dosyasına gömülü değildir.",
-                          "Başarılı"
-                        );
-                        
-                        // Dosyayı aç (isteğe bağlı)
-                        if (cordova.plugins && cordova.plugins.fileOpener2) {
-                          cordova.plugins.fileOpener2.open(
-                            fileEntry.toURL(),
-                            'application/pdf',
-                            {
-                              error: function(e) { console.log("Open error:", e); },
-                              success: function() { console.log("PDF opened"); }
-                            }
-                          );
-                        }
-                      };
-                      
-                      fileWriter.onerror = function(e) {
-                        console.error("❌ Yazma hatası:", e);
-                        stopLoading();
-                        showAlert("Dosya yazma hatası: " + JSON.stringify(e), "Hata");
-                      };
-                      
-                      // Base64 → Uint8Array → Blob
-                      const byteChars = atob(base64Data);
-                      const byteArray = new Uint8Array(byteChars.length);
-                      for (let i = 0; i < byteChars.length; i++) {
-                        byteArray[i] = byteChars.charCodeAt(i);
-                      }
-                      const blob = new Blob([byteArray], { type: 'application/pdf' });
-                      
-                      console.log("✏️ Yazılıyor...");
-                      fileWriter.write(blob);
-                      
-                    },
-                    function(error) {
-                      console.error("❌ Writer oluşturma hatası:", error);
-                      stopLoading();
-                      showAlert("Writer hatası: " + error, "Hata");
-                    }
-                  );
-                },
-                function(error) {
-                  console.error("❌ Dosya oluşturma hatası:", error);
-                  stopLoading();
-                  showAlert("Dosya oluşturulamadı: " + error, "Hata");
-                }
-              );
-            },
-            function(error) {
-              console.error("❌ PDF_Reader klasör hatası:", error);
-              stopLoading();
-              showAlert("PDF_Reader klasörü oluşturulamadı: " + error, "Hata");
-            }
-          );
-        },
-        function(error) {
-          console.error("❌ Download klasör hatası:", error);
-          stopLoading();
-          showAlert("Download klasörü oluşturulamadı: " + error, "Hata");
-        }
-      );
-    },
-    function(error) {
-      console.error("❌ Root erişim hatası:", error);
-      stopLoading();
-      showAlert("Storage erişilemedi: " + error, "Hata");
-    }
-  );
-}
 
-// YARDIMCI FONKSİYONLAR
-function showAlert(message, title) {
-  console.log("💬 Alert:", title, "-", message);
-  
-  if (navigator.notification && navigator.notification.alert) {
-    navigator.notification.alert(
-      message,
-      function() {},
-      title || "Bilgi",
-      "Tamam"
-    );
-  } else {
-    alert((title ? title + ": " : "") + message);
-  }
-}
+  const root = cordova.file.externalStorageDirectory;  
+  const download = root + "Download/";
+  const folder = download + "PDF_Reader/";
 
-function stopLoading() {
-  if (navigator.notification && navigator.notification.activityStop) {
-    navigator.notification.activityStop();
-  }
-}
+  window.resolveLocalFileSystemURL(root, function (fsRoot) {
+    fsRoot.getDirectory("Download", { create: true }, function(dl) {
+      dl.getDirectory("PDF_Reader", { create: true }, function(dir) {
 
-// DEBUG İÇİN
-console.log("🚀 PDF Save Script yüklendi!");
-console.log("Cordova:", !!window.cordova);
-console.log("File plugin:", !!(window.cordova && cordova.file));
-console.log("PDFViewerApplication:", !!window.PDFViewerApplication);
+        dir.getFile(fileName, { create: true }, function(file) {
+
+          file.createWriter(function(writer) {
+
+            const blob = new Blob([arrayBuffer], { type: "application/pdf" });
+
+            writer.onwriteend = function () {
+              alert("PDF Kaydedildi:\nDownload/PDF_Reader/\n→ " + fileName);
+            };
+
+            writer.onerror = function (e) {
+              alert("Yazma hatası: " + e.toString());
+            };
+
+            writer.write(blob);
+          });
+
+        });
+
+      });
+    });
+  });
+}
 
 </script>
+
+
+
+
+
+
+
+
     
+
+
+<!-- pdf acma- kaydetme vs -->
+    
+<!-- pdf acma- kaydetme vs -->
   </body>
 </html>
