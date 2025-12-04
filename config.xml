@@ -11,8 +11,9 @@
         Apache Cordova Team
     </author>
 
-    <!-- Uygulama başlangıç dosyası -->
-    <content src="index.html" />
+
+    <!-- UYGULAMA GİRİŞ DOSYASI -->
+    <content src="web/index.html" />
 
     <access origin="*" />
 
