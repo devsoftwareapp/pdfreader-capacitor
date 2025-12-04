@@ -29,19 +29,11 @@
 
     <!-- ANDROID PLATFORM AYARLARI -->
     <platform name="android">
-        <!-- Doğru izin yapılandırması -->
-        <edit-config file="AndroidManifest.xml" target="/manifest" mode="merge">
-            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
-            <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" android:maxSdkVersion="30" />
-            
-            <!-- Android 13+ için -->
-            <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" android:maxSdkVersion="33" />
-            <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" android:maxSdkVersion="33" />
-            <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" android:maxSdkVersion="33" />
-            
-            <!-- Request legacy external storage for Android 10+ -->
+        <!-- Android 10+ için legacy storage -->
+        <edit-config file="AndroidManifest.xml" target="/manifest/application" mode="merge">
             <application android:requestLegacyExternalStorage="true" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
         </edit-config>
     </platform>
 
@@ -49,11 +41,14 @@
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
 
-    <!-- PLUGINLER -->
-    <plugin name="cordova-plugin-android-permissions" spec="^1.1.2" />
-    <plugin name="cordova-plugin-file" spec="^7.0.0" />
-    <plugin name="cordova-plugin-file-opener2" spec="^3.1.0" />
-    <plugin name="cordova-plugin-dialogs" spec="^2.0.2" />
-    <plugin name="cordova-plugin-splashscreen" spec="^6.0.2" />
+    <!-- PLUGINLER - SADECE CORE PLUGIN'LER -->
+    <!-- Core plugin'ler (Apache Cordova tarafından desteklenen) -->
+    <plugin name="cordova-plugin-file" />
+    <plugin name="cordova-plugin-dialogs" />
+    <plugin name="cordova-plugin-splashscreen" />
+    
+    <!-- Third-party plugin'ler (daha güncel versiyonlar için) -->
+    <plugin name="cordova-plugin-android-permissions" spec="1.1.0" />
+    <plugin name="cordova-plugin-file-opener2" spec="3.0.5" />
 
 </widget>
