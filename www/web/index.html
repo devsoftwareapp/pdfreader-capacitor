@@ -2,12 +2,10 @@
 <html lang="tr" data-theme="light">
 <head>
   <meta charset="utf-8" />
-
-  <script src="../cordova.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>PDF Reader | Dev Software</title>
   
-  <link rel="icon" type="image/png" href="logo/logo.png">
+  <link rel="icon" type="image/png" href="../logo/logo.png">
   
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
   
@@ -839,7 +837,7 @@
       <div class="header-content" id="headerNormal">
         <div class="flex items-center gap-sm">
           <div class="logo">
-              <img src="logo/logo.png" alt="PDF Reader Logo">
+              <img src="../logo/logo.png" alt="PDF Reader Logo">
           </div>
           <h1 class="app-title">PDF Reader</h1>
         </div>
@@ -1027,7 +1025,7 @@
   <aside class="drawer" id="drawer">
     <div class="drawer-header">
       <div class="drawer-logo">
-          <img src="logo/logo.png" alt="PDF Reader Logo">
+          <img src="../logo/logo.png" alt="PDF Reader Logo">
       </div>
       <h3>PDF Reader</h3>
       </div>
@@ -1140,26 +1138,65 @@
   </div>
   
   <script>
-      if (typeof window.cordova === 'undefined') {
-          window.cordova = {
-              plugins: {
-                  permissions: {
-                      READ_EXTERNAL_STORAGE: 'android.permission.READ_EXTERNAL_STORAGE',
-                      WRITE_EXTERNAL_STORAGE: 'android.permission.WRITE_EXTERNAL_STORAGE',
-                      hasPermission: (permission, success, error) => {
-                          console.warn("Cordova İzin Kontrolü simüle edildi: Reddedildi.");
-                          error({ hasPermission: false });
-                      },
-                      requestPermissions: (permissions, success, error) => {
-                          console.warn("Cordova İzin İsteği simüle edildi: Reddedildi.");
-                          error({ hasPermission: false });
-                      }
-                  }
-              }
-          };
-      }
+    // Cordova'nın yüklü olup olmadığını kontrol et
+    function isCordova() {
+        return typeof window.cordova !== 'undefined';
+    }
+    
+    // Cordova hazır değilse simüle et
+    if (!isCordova()) {
+        console.log("Cordova simüle ediliyor...");
+        window.cordova = {
+            plugins: {
+                permissions: {
+                    READ_EXTERNAL_STORAGE: 'android.permission.READ_EXTERNAL_STORAGE',
+                    WRITE_EXTERNAL_STORAGE: 'android.permission.WRITE_EXTERNAL_STORAGE',
+                    
+                    // İzin kontrolü
+                    checkPermission: function(permission, success, error) {
+                        console.log("Cordova simülasyon: İzin kontrol ediliyor -", permission);
+                        // Test için varsayılan olarak izin yok
+                        if (typeof success === 'function') {
+                            success({ hasPermission: false });
+                        }
+                    },
+                    
+                    // İzin isteme
+                    requestPermission: function(permission, success, error) {
+                        console.log("Cordova simülasyon: İzin isteniyor -", permission);
+                        // Test için kullanıcıdan simüle izin iste
+                        if (confirm("Depolama izni verilsin mi? (Simülasyon)")) {
+                            if (typeof success === 'function') {
+                                success({ hasPermission: true });
+                            }
+                        } else {
+                            if (typeof success === 'function') {
+                                success({ hasPermission: false });
+                            }
+                        }
+                    },
+                    
+                    // Çoklu izin isteme
+                    requestPermissions: function(permissions, success, error) {
+                        console.log("Cordova simülasyon: Çoklu izin isteniyor -", permissions);
+                        // İlk izni kullan
+                        window.cordova.plugins.permissions.requestPermission(
+                            permissions[0], 
+                            success, 
+                            error
+                        );
+                    },
+                    
+                    // İzin durumunu kontrol et
+                    hasPermission: function(permission, success, error) {
+                        window.cordova.plugins.permissions.checkPermission(permission, success, error);
+                    }
+                }
+            }
+        };
+    }
   </script>
-  <script type="text/javascript" src="cordova.js"></script>
+  <script type="text/javascript" src="../cordova.js"></script>
 
   <script>
     // --- VARIABLES ---
@@ -1199,12 +1236,9 @@
     let isSelectionMode = false;
     let selectedCards = new Set();
     
-    // Cordova İzin Tanımları
-    const PERMISSIONS = [
-        window.cordova.plugins.permissions.READ_EXTERNAL_STORAGE,
-        window.cordova.plugins.permissions.WRITE_EXTERNAL_STORAGE
-    ];
-
+    // İzin durumu
+    let hasStoragePermission = false;
+    
     // Data Storage (In-Memory for this session)
     let importedFiles = []; // PDF Yükle ile gelen dosyalar
 
@@ -1217,14 +1251,21 @@
     const headerHeight = 64; 
     let currentNav = 'home';
     const tabOrder = ['recent', 'device', 'favorites'];
-    let hasStoragePermission = false; // İzin durumu takibi
 
     // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
-      // Cordova hazır olayı beklenmeli
-      document.addEventListener('deviceready', onDeviceReady, false);
-      // DOM events'i Cordova'dan bağımsız olanları burada bağla
+      
+      // Cordova hazır olayını dinle
+      if (isCordova()) {
+        document.addEventListener('deviceready', onDeviceReady, false);
+      } else {
+        // Cordova yoksa hemen başlat
+        console.log("Cordova yok, web modunda başlatılıyor");
+        setTimeout(onDeviceReady, 500);
+      }
+      
+      // DOM events'larını bağla
       attachEvents(); 
       document.querySelector('.setting-tab').classList.add('active');
       document.querySelector('.setting-panel').classList.add('active');
@@ -1234,9 +1275,10 @@
     });
 
     /**
-     * Cordova hazır olduğunda çağrılır.
+     * Uygulama başlatıldığında çağrılır.
      */
     function onDeviceReady() {
+        console.log("Device ready, izinler kontrol ediliyor...");
         // Uygulama başlatıldığında izinleri kontrol et
         checkDevicePermissions(() => {
             loadData(); // İzin varsa verileri yükle
@@ -1250,50 +1292,105 @@
      * @param {function} successCallback - İzin varsa çağrılacak fonksiyon.
      */
     function checkDevicePermissions(successCallback) {
-        cordova.plugins.permissions.hasPermission(PERMISSIONS[0], (status) => {
-            hasStoragePermission = status.hasPermission;
+        console.log("İzinler kontrol ediliyor...");
+        
+        if (!isCordova()) {
+            console.log("Web modu: İzin simülasyonu");
+            // Web modunda izin kontrolü (simülasyon)
+            const savedPermission = localStorage.getItem('storagePermission');
+            hasStoragePermission = savedPermission === 'true';
+            
+            console.log("Web modu izin durumu:", hasStoragePermission);
             updateDevicePanelVisibility();
+            
             if (hasStoragePermission && successCallback) {
                 successCallback();
             }
-        }, () => {
-             // Hata durumunda da false varsay
-            hasStoragePermission = false;
-            updateDevicePanelVisibility();
-        });
+            return;
+        }
+        
+        // Cordova modunda
+        cordova.plugins.permissions.checkPermission(
+            cordova.plugins.permissions.READ_EXTERNAL_STORAGE,
+            function(status) {
+                hasStoragePermission = status.hasPermission;
+                console.log("Cordova izin durumu:", hasStoragePermission);
+                updateDevicePanelVisibility();
+                if (hasStoragePermission && successCallback) {
+                    successCallback();
+                }
+            },
+            function(error) {
+                console.error('İzin kontrol hatası:', error);
+                hasStoragePermission = false;
+                updateDevicePanelVisibility();
+            }
+        );
     }
 
     /**
      * Kullanıcıdan depolama izinlerini ister.
      */
     function requestDevicePermissions() {
-        cordova.plugins.permissions.requestPermissions(PERMISSIONS, (status) => {
-            hasStoragePermission = status.hasPermission;
-            updateDevicePanelVisibility();
-            if (hasStoragePermission) {
-                alert('Depolama izni başarıyla verildi.');
-                loadData(); 
+        console.log("İzin isteniyor...");
+        
+        if (!isCordova()) {
+            console.log("Web modu: İzin simülasyon isteği");
+            // Web modunda simüle izin iste
+            if (confirm("Bu web uygulamasının cihazınızdaki dosyalara erişmesine izin vermek istiyor musunuz? (Simülasyon)")) {
+                hasStoragePermission = true;
+                localStorage.setItem('storagePermission', 'true');
+                alert('Depolama izni başarıyla verildi (Simülasyon).');
+                updateDevicePanelVisibility();
+                loadData();
             } else {
-                alert('Hata: Depolama izni reddedildi. Dosyalara erişilemiyor.');
+                hasStoragePermission = false;
+                localStorage.setItem('storagePermission', 'false');
+                alert('Depolama izni reddedildi (Simülasyon).');
+                updateDevicePanelVisibility();
             }
-        }, (error) => {
-            console.error('İzin isteme hatası:', error);
-            alert('İzin isteme hatası oluştu. Lütfen uygulama ayarlarından izinleri kontrol edin.');
-            hasStoragePermission = false;
-            updateDevicePanelVisibility();
-        });
+            return;
+        }
+        
+        // Cordova modunda
+        cordova.plugins.permissions.requestPermission(
+            cordova.plugins.permissions.READ_EXTERNAL_STORAGE,
+            function(status) {
+                if (status.hasPermission) {
+                    console.log("İzin verildi!");
+                    hasStoragePermission = true;
+                    updateDevicePanelVisibility();
+                    alert('Depolama izni başarıyla verildi.');
+                    loadData(); 
+                } else {
+                    console.log("İzin reddedildi!");
+                    hasStoragePermission = false;
+                    alert('Depolama izni reddedildi. Lütfen ayarlardan izin verin.');
+                    updateDevicePanelVisibility();
+                }
+            },
+            function(error) {
+                console.error('İzin isteme hatası:', error);
+                alert('İzin isteme hatası oluştu. Lütfen uygulama ayarlarından izinleri kontrol edin.');
+                hasStoragePermission = false;
+                updateDevicePanelVisibility();
+            }
+        );
     }
     
     /**
      * İzin durumuna göre Cihazda panelinin görünürlüğünü ayarlar.
      */
     function updateDevicePanelVisibility() {
+        console.log("Panel görünürlüğü güncelleniyor, izin durumu:", hasStoragePermission);
         if (hasStoragePermission) {
             permissionPrompt.style.display = 'none';
-            deviceListContainer.style.display = 'grid'; // Grid veya Block hangisi uygunsa
+            deviceListContainer.style.display = 'grid';
+            console.log("Cihaz listesi gösteriliyor");
         } else {
             permissionPrompt.style.display = 'block';
             deviceListContainer.style.display = 'none';
+            console.log("İzin isteme ekranı gösteriliyor");
         }
     }
     
@@ -1352,8 +1449,10 @@
     // Cihazda listesini render eden özel fonksiyon
     function renderDeviceList() {
         if (!hasStoragePermission) {
-            return; // İzin yoksa listeyi gösterme
+            console.log("İzin yok, cihaz listesi render edilmiyor");
+            return;
         }
+        console.log("Cihaz listesi render ediliyor, dosya sayısı:", importedFiles.length);
         renderList('deviceList', importedFiles);
         if (importedFiles.length === 0) {
              document.getElementById('deviceList').innerHTML = `
@@ -1366,7 +1465,7 @@
         }
     }
 
-    // --- KART OLUŞTURMA (Diğer fonksiyonlar bozulmadı) ---
+    // --- KART OLUŞTURMA ---
     function createCard(name, size, date, isFavorite, id) {
       const MAX_LENGTH = 30;
       const truncatedName = name.length > MAX_LENGTH 
@@ -1440,8 +1539,13 @@
       } else if (action === 'import') {
           // Önce izin kontrolü yap
           checkDevicePermissions(() => {
-              // İzin varsa inputu tetikle
-              pdfFileInput.click();
+              if (hasStoragePermission) {
+                  // İzin varsa inputu tetikle
+                  pdfFileInput.click();
+              } else {
+                  alert('PDF yüklemek için önce depolama izni vermelisiniz.');
+                  requestDevicePermissions();
+              }
           });
       }
       // Menüyü kapat
@@ -1459,6 +1563,13 @@
         const files = event.target.files;
         if (files && files.length > 0) {
             const file = files[0];
+            
+            // Sadece PDF dosyalarını kabul et
+            if (!file.type.includes('pdf')) {
+                alert('Lütfen sadece PDF dosyaları yükleyin.');
+                pdfFileInput.value = '';
+                return;
+            }
             
             // Tarih Formatlama
             const now = new Date();
@@ -1500,6 +1611,12 @@
                 pdfFileInput.value = '';
             };
 
+            // Hata durumu
+            reader.onerror = () => {
+                alert('Dosya okunurken hata oluştu.');
+                pdfFileInput.value = '';
+            };
+
             // Dosyayı Base64 DataURL olarak oku
             reader.readAsDataURL(file);
         }
@@ -1515,7 +1632,7 @@
         return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
     }
 
-    // Cihaz PDF Tarama Fonksiyonu (Eklentiler tam çalışsaydı tüm cihazı tarardı)
+    // Cihaz PDF Tarama Fonksiyonu
     function scanDeviceForPDFs() {
         if (!hasStoragePermission) {
             alert('Lütfen önce depolama izni verin.');
@@ -1531,7 +1648,7 @@
         renderDeviceList();
     }
 
-    // --- SELECTION MODE FUNCTIONS (Değişiklik yapılmadı) ---
+    // --- SELECTION MODE FUNCTIONS ---
     function enterSelectionMode() {
         isSelectionMode = true;
         document.body.classList.add('selection-mode');
@@ -1632,7 +1749,7 @@
         selectionCount.textContent = `${selectedCards.size} öğe seçildi`;
     }
 
-    // --- FAVORİ İŞLEVİ (Değişiklik yapılmadı) ---
+    // --- FAVORİ İŞLEVİ ---
     function toggleFavorite(button, cardId) {
         if (isSelectionMode) {
             toggleCardSelection(cardId);
@@ -1659,7 +1776,7 @@
     }
 
 
-    // --- LONG PRESS VE CLICK YÖNETİMİ (Değişiklik yapılmadı) ---
+    // --- LONG PRESS VE CLICK YÖNETİMİ ---
     let longPressTimer;
     let isLongPress = false;
 
@@ -1704,7 +1821,6 @@
             // 2. Base64 verisi var mı kontrol et
             if (fileData && fileData.base64) {
                 // 3. Base64 verisini URL parametresi olarak ekle
-                // Not: Base64 verisi çok büyük olabileceği için bu yöntem mobil uygulamalarda dikkatli kullanılmalıdır.
                 const url = "viewer.html?base64=" + 
                             encodeURIComponent(fileData.base64) + 
                             "&name=" + 
@@ -1718,7 +1834,7 @@
         }
     }
 
-    // --- CONTEXT MENU FONKSİYONLARI (Değişiklik yapılmadı) ---
+    // --- CONTEXT MENU FONKSİYONLARI ---
     function openContextMenu(name, size, date, cardId) {
         if (isSelectionMode) {
             toggleCardSelection(cardId);
@@ -1753,14 +1869,20 @@
                     break;
                 case 'delete':
                     if(confirm(`"${currentContextFile}" dosyasını silmek istediğinize emin misiniz?`)) {
-                        alert('Dosya silindi.');
+                        // Dosyayı importedFiles'dan sil
+                        const fileIndex = importedFiles.findIndex(f => f.name === currentContextFile);
+                        if (fileIndex > -1) {
+                            importedFiles.splice(fileIndex, 1);
+                            loadData();
+                            alert('Dosya silindi.');
+                        }
                     }
                     break;
             }
         }, 300); 
     }
 
-    // --- SEARCH FUNCTIONS (Değişiklik yapılmadı) ---
+    // --- SEARCH FUNCTIONS ---
     function triggerSearch() {
         const query = searchInput.value.toLowerCase();
         const allCards = document.querySelectorAll('.card');
@@ -1774,7 +1896,7 @@
         });
     }
 
-    // --- EVENTS (Değişiklik yapılmadı) ---
+    // --- EVENTS ---
     function attachEvents() {
         
       contextOverlay.addEventListener('click', closeContextMenu);
@@ -1984,7 +2106,7 @@
                 switchTab('device', true);
             });
         } else if (source === 'browse_more') {
-            // 'Daha fazla dosyaya göz atın' için de izin kontrolü gerekebilir (yükleme gibi çalışacaksa)
+            // 'Daha fazla dosyaya göz atın' için de izin kontrolü
             checkDevicePermissions(() => {
                 alert('Cihazınızın dosya yöneticisi açılıyor...');
             });
@@ -2005,6 +2127,7 @@
         document.querySelector('.help-form').reset();
     }
 
+    // Global fonksiyonlar
     window.setThemePreference = setThemePreference;
     window.sendHelpEmail = sendHelpEmail;
     window.handleFileSource = handleFileSource;
@@ -2023,8 +2146,8 @@
     window.shareSelectedCards = shareSelectedCards; 
     window.printSelectedCards = printSelectedCards;
     window.handleFileSelect = handleFileSelect;
-    window.requestDevicePermissions = requestDevicePermissions; // İzin isteme fonksiyonunu global yap
-    window.scanDeviceForPDFs = scanDeviceForPDFs; // Cihazda listesi için fonksiyon
+    window.requestDevicePermissions = requestDevicePermissions;
+    window.scanDeviceForPDFs = scanDeviceForPDFs;
     
   </script>
 </body>
