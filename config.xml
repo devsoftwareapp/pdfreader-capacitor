@@ -7,11 +7,7 @@
 
     <name>PDFReader</name>
     <description>PDF Reader Application</description>
-    <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
-        Apache Cordova Team
-    </author>
 
-    <!-- UYGULAMA GİRİŞ DOSYASI -->
     <content src="web/index.html" />
 
     <access origin="*" />
@@ -24,30 +20,49 @@
     <preference name="android-minSdkVersion" value="24" />
     <preference name="android-targetSdkVersion" value="36" />
     <preference name="android-compileSdkVersion" value="36" />
-
     <preference name="AndroidPersistentFileLocation" value="Compatibility" />
 
-    <!-- ANDROID PLATFORM AYARLARI -->
+    <!-- Android Platform -->
     <platform name="android">
-        <!-- Android 10+ için legacy storage -->
-        <edit-config file="AndroidManifest.xml" target="/manifest/application" mode="merge">
-            <application android:requestLegacyExternalStorage="true" />
-            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+        <!-- Android 13+ için medya izinleri -->
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest">
+            <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+            <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+            <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+            <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
         </edit-config>
+
+        <!-- Android 10 legacy storage -->
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <application android:requestLegacyExternalStorage="true" />
+        </edit-config>
+
+        <!-- Eski READ/WRITE storage izinleri -->
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest">
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+        </edit-config>
+
+        <!-- Android 13+ için otomatik receiver izni (HATAYI ÇÖZEN KISIM) -->
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest">
+            <permission
+                android:name="com.devsoftware.pdfreader.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+                android:protectionLevel="signature" />
+        </edit-config>
+
     </platform>
 
-    <!-- HTTP/HTTPS erişimi -->
+    <!-- HTTP/HTTPS -->
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
 
-    <!-- PLUGINLER - SADECE CORE PLUGIN'LER -->
-    <!-- Core plugin'ler (Apache Cordova tarafından desteklenen) -->
+    <!-- Pluginler -->
     <plugin name="cordova-plugin-file" />
     <plugin name="cordova-plugin-dialogs" />
     <plugin name="cordova-plugin-splashscreen" />
-    
-    <!-- Third-party plugin'ler (daha güncel versiyonlar için) -->
+
+    <!-- Third-party güncel pluginler -->
     <plugin name="cordova-plugin-android-permissions" spec="1.1.0" />
     <plugin name="cordova-plugin-file-opener2" spec="3.0.5" />
 
