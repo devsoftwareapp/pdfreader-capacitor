@@ -2150,5 +2150,35 @@
     window.scanDeviceForPDFs = scanDeviceForPDFs;
     
   </script>
+
+<script>
+function requestDevicePermissions() {
+    console.log("İzin isteniyor...");
+    if (!window.cordova) {
+        if (confirm("Bu web uygulamasının cihazınızdaki dosyalara erişmesine izin vermek istiyor musunuz? (Simülasyon)")) {
+            alert('Depolama izni verildi (Simülasyon).');
+        } else {
+            alert('Depolama izni reddedildi (Simülasyon).');
+        }
+        return;
+    }
+    const diag = cordova.plugins.diagnostic;
+    cordova.plugins.permissions.requestPermission(
+        cordova.plugins.permissions.READ_EXTERNAL_STORAGE,
+        function(status) {
+            if (status.hasPermission) {
+                alert('Depolama izni verildi.');
+            } else {
+                alert('Depolama izni reddedildi, ayarlara yönlendiriliyor...');
+                if (diag) diag.switchToSettings();
+            }
+        },
+        function(err) {
+            alert('Hata oluştu, ayarlara yönlendiriliyor...');
+            if (diag) diag.switchToSettings();
+        }
+    );
+}
+</script>
 </body>
 </html>
