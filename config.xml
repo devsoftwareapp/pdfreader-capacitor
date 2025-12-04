@@ -64,6 +64,6 @@
 
     <!-- Third-party güncel pluginler -->
     <plugin name="cordova-plugin-android-permissions" spec="1.1.0" />
-    <plugin name="cordova-plugin-file-opener2" spec="3.0.5" />
+    
 
 </widget>
