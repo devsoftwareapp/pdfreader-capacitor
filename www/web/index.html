@@ -1,38 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tüm Dosya Erişimi</title>
 
-    
+<!-- Cordova -->
 <script src="../cordova.js"></script>
-    <meta charset="utf-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: gap:;">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tüm Dosya Erişimi</title>
 
-    <style>
-        body {
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            height:100vh;
-            margin:0;
-            background:#f4f4f4;
-            font-family:Arial, sans-serif;
-        }
-        #btn {
-            padding:18px 30px;
-            font-size:22px;
-            background:#007bff;
-            color:#fff;
-            border:none;
-            border-radius:10px;
-        }
-        #result {
-            margin-top:25px;
-            text-align:center;
-            font-size:22px;
-        }
-    </style>
+<style>
+    body {
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        height:100vh;
+        margin:0;
+        background:#ffffff;
+        font-family:Arial, sans-serif;
+    }
+    #btn {
+        padding:18px 34px;
+        font-size:22px;
+        background:#007bff;
+        color:#fff;
+        border:none;
+        border-radius:12px;
+    }
+    #result {
+        margin-top:25px;
+        text-align:center;
+        font-size:22px;
+    }
+</style>
 </head>
 <body>
 
@@ -42,40 +41,46 @@
 </div>
 
 <script>
+
 document.addEventListener("deviceready", function () {
 
     const btn = document.getElementById("btn");
     const result = document.getElementById("result");
+    const permissions = cordova.plugins.permissions;
 
-    // Butona basılınca ayar ekranı açılır
-    btn.onclick = function () {
-        openAllFilesAccessSettings();
-        setTimeout(checkPermission, 1500);
-    };
-
-    // Android ayar ekranı açma (settings-hook)
-    function openAllFilesAccessSettings() {
-        if (!cordova.plugins.settings) {
-            alert("cordova-plugin-settings-hook eksik!");
-            return;
-        }
-
-        cordova.plugins.settings.open(
-            "manageAllFilesAccessPermission",
-            () => console.log("Ayar ekranı açıldı"),
-            () => alert("Ayar ekranı açılamadı")
+    // 📌 Android 11–36 Tüm dosya erişimi ekranına gider
+    function openAllFilesSettings() {
+        window.open(
+            "intent://settings/manageAllFilesAccessPermission/" +
+            "#Intent;scheme=android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION;end",
+            "_system"
         );
     }
 
-    // MANAGE_EXTERNAL_STORAGE izin kontrolü
+    // 📌 İzin kontrolü (Android 11+)
     function checkPermission() {
-        const permissions = cordova.plugins.permissions;
+
         permissions.checkPermission(
             permissions.MANAGE_EXTERNAL_STORAGE,
-            () => { result.innerHTML = "✔ Başarılı! İzin verildi"; },
-            () => { result.innerHTML = "❌ İzin verilmedi"; }
+            (status) => {
+                if (status.hasPermission) {
+                    result.innerHTML = "✔ Başarılı! İzin verildi";
+                } else {
+                    result.innerHTML = "❌ İzin verilmedi";
+                }
+            },
+            () => { 
+                result.innerHTML = "❌ Kontrol sırasında hata oluştu"; 
+            }
         );
+
     }
+
+    // 📌 Buton tıklayınca → Ayarı aç + 1.5 sn sonra izin kontrolü
+    btn.onclick = function () {
+        openAllFilesSettings();
+        setTimeout(checkPermission, 1500);
+    };
 
 });
 </script>
