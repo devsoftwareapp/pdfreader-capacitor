@@ -2,7 +2,8 @@
 <widget id="com.devsoftware.pdfreader"
     version="1.0.0"
     xmlns="http://www.w3.org/ns/widgets"
-    xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    xmlns:cdv="http://cordova.apache.org/ns/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <name>PDFReader</name>
     <description>PDF Reader Application</description>
@@ -20,10 +21,9 @@
         <preference name="android-minSdkVersion" value="24" />
         <preference name="android-targetSdkVersion" value="36" />
         <preference name="android-compileSdkVersion" value="36" />
-
         <preference name="AndroidPersistentFileLocation" value="Compatibility" />
         
-        <edit-config file="AndroidManifest.xml" target="/manifest/application" mode="merge">
+        <edit-config file="AndroidManifest.xml" target="/manifest" mode="merge">
             <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
         </edit-config>
