@@ -20,37 +20,43 @@
     <preference name="Orientation" value="portrait" />
     <preference name="SplashScreenDelay" value="2000" />
     <preference name="FadeSplashScreenDuration" value="300" />
+
     <preference name="android-minSdkVersion" value="24" />
     <preference name="android-targetSdkVersion" value="36" />
     <preference name="android-compileSdkVersion" value="36" />
+
     <preference name="AndroidPersistentFileLocation" value="Compatibility" />
 
-    <!-- Android PLATFORM AYARLARI -->
+
+    <!-- ANDROID PLATFORM AYARLARI -->
     <platform name="android">
 
-        <!-- AndroidManifest.xml izinleri -->
-        <config-file parent="/*" target="AndroidManifest.xml">
+        <!-- Klasik depolama izinleri -->
+        <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
             <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" android:maxSdkVersion="30" />
         </config-file>
 
-        <!-- Android 13+ (SDK 33) Medya Okuma İzinleri -->
+        <!-- Android 13+ yeni medya izinleri -->
         <edit-config file="AndroidManifest.xml" target="/manifest" mode="merge">
             <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" android:maxSdkVersion="33" />
             <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" android:maxSdkVersion="33" />
             <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" android:maxSdkVersion="33" />
         </edit-config>
+
     </platform>
 
-    <!-- Link izinleri -->
+
+    <!-- HTTP/HTTPS erişimi -->
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
 
-    <!-- 🔌 Pluginler (GÜNCEL & UYUMLU SÜRÜMLER) -->
-    <plugin name="cordova-plugin-android-permissions" spec="1.2.0" />
-    <plugin name="cordova-plugin-file" spec="7.0.0" />
-    <plugin name="cordova-plugin-file-opener2" spec="3.0.5" />
-    <plugin name="cordova-plugin-dialogs" spec="2.0.2" />
+
+    <!-- PLUGINLER (GitHub ile uyumlu) -->
+    <plugin name="cordova-plugin-android-permissions" />
+    <plugin name="cordova-plugin-file" />
+    <plugin name="cordova-plugin-file-opener2" />
+    <plugin name="cordova-plugin-dialogs" />
 
 </widget>
