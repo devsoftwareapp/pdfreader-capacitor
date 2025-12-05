@@ -1,59 +1,51 @@
 #!/bin/bash
+set -e
 
-echo "➡️ Capacitor Android plugin setup başlıyor..."
+echo "🚀 plugin.sh çalışıyor..."
 
-PLUGIN_PACKAGE="com.pdfreader.app"
-PLUGIN_CLASS="AndroidFullFileAccess"
-ANDROID_PATH="android/app/src/main/java"
+PLUGIN_DIR="android/app/src/main/java/com/pdfreader/app"
+PLUGIN_KT="$PLUGIN_DIR/AndroidFullFileAccess.kt"
 
-if [ ! -d "android/app" ]; then
-  echo "❌ Android platformu yok! Önce: npx cap add android"
+if [ ! -d "android" ]; then
+  echo "⏳ Android klasörü henüz yok, plugin.sh atlanıyor."
   exit 0
 fi
 
-PLUGIN_DIR="$ANDROID_PATH/$(echo $PLUGIN_PACKAGE | tr . /)"
 mkdir -p "$PLUGIN_DIR"
 
-PLUGIN_FILE="$PLUGIN_DIR/$PLUGIN_CLASS.java"
+echo "📝 Plugin dosyası yazılıyor: $PLUGIN_KT"
 
-cat <<EOF > "$PLUGIN_FILE"
-package $PLUGIN_PACKAGE;
+cat > "$PLUGIN_KT" << 'EOF'
+package com.pdfreader.app
 
-import android.content.Intent;
-import android.provider.Settings;
+import android.os.Build
+import android.provider.Settings
+import android.net.Uri
+import android.content.Intent
+import com.getcapacitor.Plugin
+import com.getcapacitor.PluginMethod
+import com.getcapacitor.JSObject
 
-import com.getcapacitor.Plugin;
-import com.getcapacitor.annotation.CapacitorPlugin;
-import com.getcapacitor.PluginCall;
+class AndroidFullFileAccess : Plugin() {
 
-@CapacitorPlugin(name = "AndroidFullFileAccess")
-public class $PLUGIN_CLASS extends Plugin {
+    @PluginMethod
+    fun openAllFilesAccessSettings(call: com.getcapacitor.PluginCall) {
+        val context = activity
 
-    public void openSettings(PluginCall call) {
-        Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-        getActivity().startActivity(intent);
-        call.resolve();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+            intent.data = Uri.parse("package:" + context.packageName)
+            context.startActivity(intent)
+        } else {
+            val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+            context.startActivity(intent)
+        }
+
+        val ret = JSObject()
+        ret.put("status", "opened")
+        call.resolve(ret)
     }
 }
 EOF
 
-echo "✔️ Plugin sınıfı oluşturuldu: $PLUGIN_FILE"
-
-# -------- MAINACTIVITY OTOMATİK BUL --------
-MAIN_ACTIVITY=$(find android/app/src/main/java -name "MainActivity.java")
-
-if [ -z "$MAIN_ACTIVITY" ]; then
-    echo "❌ MainActivity bulunamadı!"
-    exit 0
-fi
-
-echo "➡️ Bulunan MainActivity: $MAIN_ACTIVITY"
-
-if grep -q "$PLUGIN_CLASS" "$MAIN_ACTIVITY"; then
-    echo "ℹ️ Plugin zaten kayıtlı."
-else
-    echo "➡️ MainActivity'ye plugin kaydediliyor..."
-    sed -i "/super.onCreate/a\        registerPlugin($PLUGIN_CLASS.class);" "$MAIN_ACTIVITY"
-fi
-
-echo "✔️ Plugin kurulumu tamamlandı!"
+echo "✔ plugin.sh tamamlandı"
