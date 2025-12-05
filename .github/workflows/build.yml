@@ -17,24 +17,19 @@ jobs:
         run: |
           rm -rf project
           git clone https://github.com/doo/scanbot-barcode-scanner-sdk-example-capacitor-ionic.git project
-          cd project
-          ls -la
 
-      - name: Setup Node 18
+      - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
 
       - name: Install Dependencies
         working-directory: project
         run: npm install
 
-      - name: Install Ionic CLI
-        run: npm install -g @ionic/cli
-
       - name: Build Web (Ionic)
         working-directory: project
-        run: ionic build
+        run: npm run build || ionic build
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
