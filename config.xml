@@ -9,6 +9,7 @@
     <name>PDFReader</name>
     <description>PDF Reader Application</description>
 
+    <!-- Uygulamanın açacağı sayfa -->
     <content src="index.html" />
 
     <access origin="*" />
@@ -23,6 +24,7 @@
     <preference name="android-compileSdkVersion" value="36" />
     <preference name="AndroidPersistentFileLocation" value="Compatibility" />
 
+    <!-- Android Platform -->
     <platform name="android">
 
         <!-- Android 13+ medya izinleri -->
@@ -33,34 +35,34 @@
             <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
         </edit-config>
 
-        <!-- Android 10 legacy storage -->
+        <!-- Android 10 legacy external storage -->
         <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/application">
             <application android:requestLegacyExternalStorage="true" />
         </edit-config>
 
-        <!-- Android 11+ tam dosya erişimi (ALL FILES PERMISSION) -->
-        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest">
-            <uses-permission
-                android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-                tools:ignore="ScopedStorage" />
-        </edit-config>
-
-        <!-- Eski storage izinleri -->
-        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest">
-            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-        </edit-config>
-
-        <!-- Receiver hatasını çözen izin -->
+        <!-- Android 13+ dynamic receiver -->
         <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest">
             <permission
                 android:name="com.devsoftware.pdfreader.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
                 android:protectionLevel="signature" />
         </edit-config>
 
+        <!-- Eski READ/WRITE storage izinleri (Android 33 ve öncesi) -->
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest">
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+        </edit-config>
+
+        <!-- ⭐ Android 11+ All Files Access izni (tools:ignore ile - HATASIZ) -->
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <uses-permission
+                android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+                tools:ignore="ScopedStorage" />
+        </edit-config>
+
     </platform>
 
-    <!-- HTTP/HTTPS -->
+    <!-- İzin verilen yönlendirmeler -->
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
 
