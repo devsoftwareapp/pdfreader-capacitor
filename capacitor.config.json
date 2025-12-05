@@ -1,0 +1,11 @@
+{
+  "appId": "com.devsoftware.pdfreader",
+  "appName": "PDF Reader",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "Filesystem": {
+      "directory": "DOCUMENTS"
+    }
+  }
+}
