@@ -2,13 +2,16 @@
   "name": "pdfreader",
   "version": "1.0.0",
   "scripts": {
-    "build": "echo 'Cordova web build burada yok, www zaten hazır'"
+    "build": "echo 'No build step, using www directly'"
   },
   "dependencies": {
-    "@capacitor/android": "latest",
     "@capacitor/core": "latest",
+    "@capacitor/android": "latest",
     "@capacitor/filesystem": "latest",
     "@capacitor/app": "latest",
     "@capacitor/device": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "latest"
   }
 }
