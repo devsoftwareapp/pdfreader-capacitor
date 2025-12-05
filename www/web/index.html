@@ -2,20 +2,19 @@
 <html>
 <head>
     <meta charset="utf-8">
-
 </head>
 <body>
-</br></br></br></br></br></br></br></br></br></br></br></br>
-<button onclick="openAllFilesAccessSettings()">İzin Ver</button>
 
-<script>
-function openAllFilesAccessSettings() {
-    window.open(
-        "intent://settings/manageAllFilesAccessPermission/" +
-        "#Intent;scheme=android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION;end",
-        "_system"
-    );
-}
+<button onclick="requestAllFiles()">İzin Ver</button>
+
+<script type="module">
+    import { Capacitor } from "https://cdn.jsdelivr.net/npm/@capacitor/core@latest/dist/capacitor.js";
+
+    function requestAllFiles() {
+        Capacitor.Plugins.AndroidFullFileAccess.openSettings();
+    }
+
+    window.requestAllFiles = requestAllFiles;
 </script>
 
 </body>
