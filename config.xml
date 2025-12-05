@@ -7,8 +7,8 @@
 
     <name>PDFReader</name>
     <description>PDF Reader Application</description>
-
-    <content src="www/index.html" />
+!-- UYGULAMA GİRİŞ DOSYASI -->
+    <content src="web/index.html" />
 
     <access origin="*" />
 
