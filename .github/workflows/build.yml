@@ -25,16 +25,14 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Capacitor Sync
         run: npx cap sync android
 
-      # ⬇️ Burada otomatik ekleniyor
       - name: Force Java 17 Toolchain
         run: |
           echo "JAVA_TOOLCHAIN_VERSION=17" >> android/gradle.properties
-          echo "org.gradle.jvmargs=-Xmx2048m" >> android/gradle.properties
           echo "sourceCompatibility=17" >> android/gradle.properties
           echo "targetCompatibility=17" >> android/gradle.properties
 
