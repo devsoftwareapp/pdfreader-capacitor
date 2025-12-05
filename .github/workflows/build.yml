@@ -10,51 +10,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # NodeJS 20 (Capacitor için gerekli)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # NPM bağımlılıkları
       - name: Install dependencies
         run: npm install
 
-      # www/web/index.html giriş dosyası için build (Eğer herhangi bir build script'in yoksa atlayabilir)
-      - name: Build web assets
+      - name: Build web assets if exists
         run: |
-          if [ -f package.json ]; then
-            if npm run | grep -q "build"; then
-              npm run build
-            else
-              echo "Build script yok, direkt www klasörü kullanılacak."
-            fi
+          if npm run | grep -q "build"; then
+            npm run build
+          else
+            echo "Build script yok → direkt www/web kullanılacak."
           fi
 
-      # Capacitor Android sync
-      - name: Sync Capacitor
+      - name: Capacitor sync
         run: npx cap sync android
 
-      # Java 17 (Android Gradle Plugin 8+ için zorunlu)
+      - name: Give gradlew permission
+        run: chmod +x android/gradlew
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # Gradle cache
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      # Debug APK Build
       - name: Build Debug APK
         working-directory: android
         run: ./gradlew assembleDebug
 
-      # APK'yı artefact olarak yükle
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
