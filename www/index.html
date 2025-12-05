@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="../cordova.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f5f5f5;
+}
+
+/* --- Bottom Sheet --- */
+#sheet {
+    position:fixed;
+    bottom:-60%;
+    left:0;
+    width:100%;
+    background:white;
+    border-radius:20px 20px 0 0;
+    box-shadow:0 -4px 18px rgba(0,0,0,0.25);
+    padding:25px;
+    transition:0.35s ease;
+}
+
+#sheet.show {
+    bottom:0;
+}
+
+h2 {
+    margin-top:0;
+    font-size:22px;
+}
+
+.btn {
+    padding:14px;
+    border-radius:10px;
+    width:100%;
+    font-size:18px;
+    border:none;
+    margin-top:12px;
+}
+
+.full {
+    background:#007bff;
+    color:#fff;
+}
+
+.limited {
+    background:#ececec;
+}
+
+.close-btn {
+    color:#333;
+    background:#f1f1f1;
+}
+</style>
+
+</head>
+<body>
+
+<!-- Bottom Sheet -->
+<div id="sheet">
+    <h2>Dosya Erişim İzni</h2>
+    <p>PDF’leri taramak için uygulamanın dosyalara erişmesine izin ver.</p>
+
+    <button class="btn full" onclick="fullAccess()">Tümüne İzin Ver</button>
+    <button class="btn limited" onclick="limitedAccess()">Sınırlı Erişim Ver</button>
+    <button class="btn close-btn" onclick="closeSheet()">Kapat</button>
+</div>
+
+<script>
+document.addEventListener("deviceready", () => {
+    // Uygulama açılır açılmaz bottom sheet açılsın
+    setTimeout(() => {
+        document.getElementById("sheet").classList.add("show");
+    }, 400);
+});
+
+// Tüm dosya erişimi
+function fullAccess() {
+    window.open(
+        "intent://settings/manageAllFilesAccessPermission/" +
+        "#Intent;scheme=android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION;end",
+        "_system"
+    );
+}
+
+// Sınırlı erişim → sadece Media izinleri (Android 13+)
+function limitedAccess() {
+    const permissions = cordova.plugins.permissions;
+
+    let list = [
+        permissions.READ_MEDIA_IMAGES,
+        permissions.READ_MEDIA_VIDEO,
+        permissions.READ_MEDIA_AUDIO
+    ];
+
+    permissions.requestPermissions(list,
+        () => alert("Sınırlı erişim verildi"),
+        () => alert("İzin reddedildi")
+    );
+}
+
+function closeSheet() {
+    document.getElementById("sheet").classList.remove("show");
+}
+</script>
+
+</body>
+</html>
