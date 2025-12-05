@@ -1,6 +1,9 @@
-name: Hello Capacitor Build
+name: Hello Capacitor Android Build
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -25,41 +28,30 @@ jobs:
       - name: Android SDK kur
         uses: android-actions/setup-android@v3
 
-      - name: Projeyi sıfırdan oluştur
+      - name: Hello Capacitor projesini oluştur
         run: |
-          mkdir hello-capacitor
-          cd hello-capacitor
-          
+          mkdir hello
+          cd hello
+
           npm init -y
-          npm install @capacitor/core @capacitor/cli
+          npm install @capacitor/core @capacitor/cli @capacitor/android
 
           # capacitor.config.json
           cat << 'EOF' > capacitor.config.json
           {
             "appId": "com.example.hello",
-            "appName": "Hello Capacitor",
+            "appName": "Hello App",
             "webDir": "www",
             "bundledWebRuntime": false
           }
           EOF
 
-          # www/index.html
+          # www
           mkdir www
-          cat << 'EOF' > www/index.html
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8" />
-              <title>Hello Capacitor</title>
-            </head>
-            <body>
-              <h1>Hello Capacitor!</h1>
-            </body>
-          </html>
-          EOF
+          echo "<h1>Hello Capacitor!</h1>" > www/index.html
 
       - name: Android ekle & build
-        working-directory: hello-capacitor
+        working-directory: hello
         run: |
           npx cap add android
           npx cap sync android
@@ -67,7 +59,7 @@ jobs:
           ./gradlew assembleDebug
 
       - name: APK'yi artifact olarak yükle
-        uses: actions/upload-artifact@v4   # ← GÜNCEL
+        uses: actions/upload-artifact@v4
         with:
           name: hello-capacitor-apk
-          path: hello-capacitor/android/app/build/outputs/apk/debug/*.apk
+          path: hello/android/app/build/outputs/apk/debug/*.apk
